@@ -21,7 +21,7 @@ class Person:
     Represent a generic person
     """
 
-    def __init__(self, name, priorities):
+    def __init__(self, name: str, priorities: list):
         """
         name is a string which uniquely identifies this person
 
@@ -40,7 +40,7 @@ class Person:
 
 
 class Employer(Person):
-    def __init__(self, name, priorities):
+    def __init__(self, name: str, priorities: list):
         """
         name is a string which uniquely identifies this person
 
@@ -61,6 +61,23 @@ class Employer(Person):
     def __repr__(self):
         return Person.__repr__(self) + '\n' + \
             'next proposal would be to person at position ' + str(self.proposalIndex)
+    
+    def evaluateProposal(self, suitor):
+        """
+        Evaluates a proposal, though does not enact it.
+
+        suitor is the string identifier for the employer who is proposing
+
+        returns True if proposal should be accepted, False otherwise
+        """
+        if suitor in self.ranking:
+            if self.partner == None or self.ranking[suitor] < self.ranking[self.partner]:
+                self.rank = self.ranking[suitor] + 1
+                return True
+            else:
+                return False
+        else:
+            return False
 
 
 class Applicant(Person):
@@ -78,6 +95,18 @@ class Applicant(Person):
         self.ranking = {}
         for rank in range(len(priorities)):
             self.ranking[priorities[rank]] = rank
+
+    def nextProposal(self):
+        if self.proposalIndex >= len(self.priorities):
+            #print('returned None')
+            return None
+        goal = self.priorities[self.proposalIndex]
+        self.proposalIndex += 1
+        return goal
+    
+    def __repr__(self):
+        return Person.__repr__(self) + '\n' + \
+            'next proposal would be to person at position ' + str(self.proposalIndex)
 
     def evaluateProposal(self, suitor):
         """
@@ -115,9 +144,9 @@ def parseFile(filename):
     return people
 
 
-def printPairings(employer, applicant):
-    totalUtility = 0
-    matchCt = 0
+def printPairings(employer: dict, applicant: dict):
+    totalUtility: int = 0
+    matchCt: int = 0
     for empl in employer.values():
         # print(man)
         if empl.partner:
@@ -130,7 +159,17 @@ def printPairings(employer, applicant):
     print('Total Utility ', totalUtility, ' for ', matchCt, ' matchings')
 
 
-def doMatch(msg,fileTuple):
+
+def doMatch(msg: str,fileTuple: tuple, proposer: str, proposee: str):
+    """
+    Performs Gale Shapley matching algorithm
+
+    Args:
+        msg (string): Message for before output
+        fileTuple (tuple): Contains the files that are being worked with, as well as bool for verbose option
+        proposer (string): Used to print out who is proposing
+        proposee (string): Used to print out who is being proposed to
+    """
     print("\n\n"+msg+" working with files ", fileTuple)
     employerList = parseFile(fileTuple[0])
     employerPref = dict()
@@ -191,13 +230,17 @@ def doMatch(msg,fileTuple):
     print("Final Pairings are as follows:")
     printPairings(employerPref, applicants)
 
+def doGreedyMatch(msg: str, fileTuple: tuple):
+    print("FUCK")
 
-files = [("Employers0.txt", "Applicants0.txt", True)] #,
-         #("Employers.txt", "Applicants.txt", False),
-         #("Employers3.txt", "Applicants3.txt", False),
-         #("Employers1.txt", "Applicants1.txt", False),
-         #("Employers2.txt","Applicants2.txt", False)]
+files = [("Employers0.txt", "Applicants0.txt", True),
+         ("Employers.txt", "Applicants.txt", False),
+         ("Employers3.txt", "Applicants3.txt", False),
+         # ("Employers1.txt", "Applicants1.txt", False),
+         # ("Employers2.txt","Applicants2.txt", False)
+        ]
 for fileTuple in files:
     doMatch("Employers propose ", fileTuple)
+
 
 
