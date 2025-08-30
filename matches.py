@@ -39,7 +39,7 @@ class Person:
             'priority list is ' + str(self.priorities)
 
 
-class Employer(Person):
+class Proposer(Person):
     def __init__(self, name: str, priorities: list):
         """
         name is a string which uniquely identifies this person
@@ -62,25 +62,7 @@ class Employer(Person):
         return Person.__repr__(self) + '\n' + \
             'next proposal would be to person at position ' + str(self.proposalIndex)
     
-    def evaluateProposal(self, suitor):
-        """
-        Evaluates a proposal, though does not enact it.
-
-        suitor is the string identifier for the employer who is proposing
-
-        returns True if proposal should be accepted, False otherwise
-        """
-        if suitor in self.ranking:
-            if self.partner == None or self.ranking[suitor] < self.ranking[self.partner]:
-                self.rank = self.ranking[suitor] + 1
-                return True
-            else:
-                return False
-        else:
-            return False
-
-
-class Applicant(Person):
+class Proposee(Person):
 
     def __init__(self, name, priorities):
         """
@@ -95,18 +77,6 @@ class Applicant(Person):
         self.ranking = {}
         for rank in range(len(priorities)):
             self.ranking[priorities[rank]] = rank
-
-    def nextProposal(self):
-        if self.proposalIndex >= len(self.priorities):
-            #print('returned None')
-            return None
-        goal = self.priorities[self.proposalIndex]
-        self.proposalIndex += 1
-        return goal
-    
-    def __repr__(self):
-        return Person.__repr__(self) + '\n' + \
-            'next proposal would be to person at position ' + str(self.proposalIndex)
 
     def evaluateProposal(self, suitor):
         """
@@ -144,19 +114,25 @@ def parseFile(filename):
     return people
 
 
-def printPairings(employer: dict, applicant: dict):
+def printPairings(proposerPref: dict, proposees: dict, proposer: str, proposee: str):
     totalUtility: int = 0
+    proposerUtility: int = 0
+    proposeeUtility: int = 0
     matchCt: int = 0
-    for empl in employer.values():
+    for prop in proposerPref.values():
         # print(man)
-        if empl.partner:
-            print(empl.name, empl.rank, 'is paired with', str(empl.partner), applicant[str(empl.partner)].rank)
-            totalUtility += empl.rank + applicant[str(empl.partner)].rank
+        if prop.partner:
+            print(prop.name, prop.rank, 'is paired with', str(prop.partner), proposees[str(prop.partner)].rank)
+            proposerUtility += prop.rank
+            proposeeUtility += proposees[str(prop.partner)].rank
+            totalUtility += prop.rank + proposees[str(prop.partner)].rank
             matchCt = matchCt + 1
         else:
-            print(empl.name, 'is NOT paired')
+            print(prop.name, 'is NOT paired')
 
     print('Total Utility ', totalUtility, ' for ', matchCt, ' matchings')
+    print(proposer, 'Utility', proposerUtility)
+    print(proposee, 'Utility', proposeeUtility)
 
 
 
@@ -171,33 +147,33 @@ def doMatch(msg: str,fileTuple: tuple, proposer: str, proposee: str):
         proposee (string): Used to print out who is being proposed to
     """
     print("\n\n"+msg+" working with files ", fileTuple)
-    employerList = parseFile(fileTuple[0])
-    employerPref = dict()
+    proposerList = parseFile(fileTuple[0])
+    proposerPref = dict()
     # each item in hr_list is a person and their priority list
-    for person, priority in employerList:
-        # employerPref[person[0]] = Employer(person[0], person[1])
-        employerPref[person] = Employer(person, priority)
-    unmatched = list(employerPref.keys())
+    for person, priority in proposerList:
+        # proposerPref[person[0]] = Proposer(person[0], person[1])
+        proposerPref[person] = Proposer(person, priority)
+    unmatched = list(proposerPref.keys())
 
     # initialize dictionary of appllicants
-    applicant_list = parseFile(fileTuple[1])
-    applicants = dict()
-    # each item in applicant_list is a person and their priority list
-    for person, priority in applicant_list:
-        applicants[person] = Applicant(person, priority)
+    proposeeList = parseFile(fileTuple[1])
+    proposees = dict()
+    # each item in proposeeList is a person and their priority list
+    for person, priority in proposeeList:
+        proposees[person] = Proposee(person, priority)
     verbose = fileTuple[2]
     ############################### the real algorithm ##################################
     while len(unmatched) > 0:
         if verbose:
-            print("Unmatched employers ", unmatched)
-        m = employerPref[unmatched[0]]  # pick arbitrary unmatched employer
+            print("Unmatched " + proposer + "s", unmatched)
+        m = proposerPref[unmatched[0]]  # pick arbitrary unmatched employer
         n = m.nextProposal()
         if n is None:
             if verbose:
                 print('No more options ' + str(m))
             unmatched.pop(0)
             continue
-        who = applicants[n]  # identify highest-rank applicant to which
+        who = proposees[n]  # identify highest-rank applicant to which
         #    m has not yet proposed
         if verbose: print(m.name, 'proposes to', who.name)
 
@@ -206,7 +182,7 @@ def doMatch(msg: str,fileTuple: tuple, proposer: str, proposee: str):
 
             if who.partner:
                 # previous partner is getting dumped
-                mOld = employerPref[who.partner]
+                mOld = proposerPref[who.partner]
                 if verbose:
                     print('  ', mOld.name, 'gets dumped')
 
@@ -224,14 +200,14 @@ def doMatch(msg: str,fileTuple: tuple, proposer: str, proposee: str):
 
         if verbose:
             print("Tentative Pairings are as follows:")
-            printPairings(employerPref, applicants)
+            printPairings(proposerPref, proposees, proposer, proposee)
 
     # we should be done
     print("Final Pairings are as follows:")
-    printPairings(employerPref, applicants)
+    printPairings(proposerPref, proposees, proposer, proposee)
 
-def doGreedyMatch(msg: str, fileTuple: tuple):
-    print("FUCK")
+def doGreedyMatch(msg: str, fileTuple: tuple, proposer: str, proposee: str):
+    print("TODO")
 
 files = [("Employers0.txt", "Applicants0.txt", True),
          ("Employers.txt", "Applicants.txt", False),
@@ -240,7 +216,7 @@ files = [("Employers0.txt", "Applicants0.txt", True),
          # ("Employers2.txt","Applicants2.txt", False)
         ]
 for fileTuple in files:
-    doMatch("Employers propose ", fileTuple)
+    doMatch("Employers propose ", fileTuple, "Employer", "Applicant")
 
 
 
