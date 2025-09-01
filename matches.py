@@ -146,8 +146,7 @@ def printPairings(proposerPref: dict, proposees: dict, proposer: str, proposee: 
     print('Total Utility ', totalUtility, ' for ', matchCt, ' matchings')
     print(proposer, 'Utility', proposerUtility)
     print(proposee, 'Utility', proposeeUtility)
-
-
+    print()
 
 def doMatch(msg: str,fileTuple: tuple, proposer: str, proposee: str) -> void:
     """
@@ -226,6 +225,7 @@ def doGreedyMatch(msg: str, fileTuple: tuple, proposer: str, proposee: str) -> v
     Args:
         msg (string): Message for before output
         fileTuple (tuple): Contains the files that are being worked with, as well as bool for verbose option
+            tuple should have the order [proposers, proposees, verbose]
         proposer (string): Used to print out who is proposing
         proposee (string): Used to print out who is being proposed to
     """
@@ -289,15 +289,18 @@ def doGreedyMatch(msg: str, fileTuple: tuple, proposer: str, proposee: str) -> v
     print("Final Pairings are as follows:")
     printPairings(proposerPref, proposees, proposer, proposee)
 
-files = [("Employers0.txt", "Applicants0.txt", True),
-         ("Employers.txt", "Applicants.txt", True),
-         ("Employers3.txt", "Applicants3.txt", True),
-         # ("Employers1.txt", "Applicants1.txt", False),
-         # ("Employers2.txt","Applicants2.txt", False)
-        ]
-for fileTuple in files:
-    doMatch("Employers propose ", fileTuple, "Employer", "Applicant")
-    doGreedyMatch("Employers greedy propose ", fileTuple, "Employer", "Applicant")
+def runComparisons():
+    files = [("Employers0.txt", "Applicants0.txt", False),
+            # ("Employers.txt", "Applicants.txt", False),
+            ("Employers3.txt", "Applicants3.txt", False),
+            # ("Employers1.txt", "Applicants1.txt", False),
+            # ("Employers2.txt","Applicants2.txt", False)
+            ]
+    
+    for fileTuple in files:
+        doMatch("Employers propose ", fileTuple, "Employer", "Applicant")
+        doGreedyMatch("Employers greedy propose ", fileTuple, "Employer", "Applicant")
 
 
 
+runComparisons()
