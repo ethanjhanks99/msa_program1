@@ -263,16 +263,6 @@ def doGreedyMatch(msg: str, fileTuple: tuple, proposer: str, proposee: str) -> v
         if who.evaluateGreedily(m.name):
             if verbose: print('  ', who.name, 'accepts the proposal')
 
-            if who.partner:
-                # previous partner is getting dumped
-                mOld = proposerPref[who.partner]
-                if verbose:
-                    print('  ', mOld.name, 'gets dumped')
-
-                mOld.partner = None
-                mOld.rank = 0
-                unmatched.append(mOld.name)
-
             unmatched.pop(0)
             who.partner = m.name
             m.partner = who.name
@@ -290,17 +280,36 @@ def doGreedyMatch(msg: str, fileTuple: tuple, proposer: str, proposee: str) -> v
     printPairings(proposerPref, proposees, proposer, proposee)
 
 def runComparisons():
-    files = [("Employers0.txt", "Applicants0.txt", False),
+    # files = [("Employers0.txt", "Applicants0.txt", False),
             # ("Employers.txt", "Applicants.txt", False),
-            ("Employers3.txt", "Applicants3.txt", False),
+            # ("Employers3.txt", "Applicants3.txt", False),
             # ("Employers1.txt", "Applicants1.txt", False),
             # ("Employers2.txt","Applicants2.txt", False)
-            ]
+            # ]
     
-    for fileTuple in files:
-        doMatch("Employers propose ", fileTuple, "Employer", "Applicant")
-        doGreedyMatch("Employers greedy propose ", fileTuple, "Employer", "Applicant")
+    # for fileTuple in files:
+    #     doMatch("Employers propose ", fileTuple, "Employer", "Applicant")
+    #     doGreedyMatch("Employers greedy propose ", fileTuple, "Employer", "Applicant")
 
+    print("---Employers as Proposers---")
+    print("Employers0.txt & Applicants0.txt\n")
+    doMatch("Gale Shapley", ("Employers0.txt", "Applicants0.txt", False), "Employer", "Applicant")
+    doGreedyMatch("Greedy", ("Employers0.txt", "Applicants0.txt", False), "Employer", "Applicant")
+    print()
 
+    print("Employers3.txt & Applicants3.txt\n")
+    doMatch("Gale Shapley", ("Employers3.txt", "Applicants3.txt", False), "Employer", "Applicant")
+    doGreedyMatch("Greedy", ("Employers3.txt", "Applicants3.txt", False), "Employer", "Applicant")
+    print()
+
+    print("---Applicants as Proposers---")
+    print("Applicants0.txt & Employers0.txt")
+    doMatch("Gale Shapley", ("Applicants0.txt", "Employers0.txt", False), "Applicant", "Employer")
+    doGreedyMatch("Greedy", ("Applicants0.txt", "Employers0.txt", False), "Applicant", "Employer")
+    print()
+
+    print("Applicants3.txt & Employers3.txt")
+    doMatch("Gale Shapley", ("Applicants3.txt", "Employers3.txt", False), "Applicant", "Employer")
+    doGreedyMatch("Greedy", ("Applicants3.txt", "Employers3.txt", False), "Applicant", "Employer")
 
 runComparisons()
